@@ -42,13 +42,16 @@ export function adaptMovieSummary(
   movie: OPhimMovieSummaryRaw,
   imageBaseUrl?: string | null,
 ): MovieSummary {
+  const posterPath = compactText(movie.poster_url);
+  const thumbnailPath = compactText(movie.thumb_url);
+
   return {
     id: stableMovieId(movie),
     name: movie.name.trim(),
     originalName: compactText(movie.origin_name),
     slug: movie.slug.trim(),
-    posterUrl: resolveMovieImage(movie.poster_url ?? movie.thumb_url, imageBaseUrl),
-    thumbnailUrl: resolveMovieImage(movie.thumb_url ?? movie.poster_url, imageBaseUrl),
+    posterUrl: resolveMovieImage(posterPath ?? thumbnailPath, imageBaseUrl),
+    thumbnailUrl: resolveMovieImage(thumbnailPath ?? posterPath, imageBaseUrl),
     year: movie.year ?? undefined,
     quality: compactText(movie.quality),
     language: compactText(movie.lang),

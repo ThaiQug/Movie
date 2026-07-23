@@ -111,6 +111,21 @@ npm run build
 
 Unit test sử dụng fixture local và không gọi OPhim API thật.
 
+### Kiểm chứng contract OPhim
+
+Contract dữ liệu được đối chiếu trực tiếp ngày 23/07/2026 với các endpoint:
+
+- `/v1/api/home`
+- `/v1/api/danh-sach/phim-bo`
+- `/v1/api/tim-kiem`
+- `/v1/api/the-loai` và `/v1/api/the-loai/{slug}`
+- `/v1/api/quoc-gia` và `/v1/api/quoc-gia/{slug}`
+- `/v1/api/phim/{slug}`
+
+Các response mẫu đã được rút gọn và làm sạch trong
+`src/lib/ophim/__tests__/fixtures`. Unit test luôn dùng fixture local để tránh
+phụ thuộc vào mạng và dữ liệu phim thay đổi theo thời gian.
+
 ## Nguồn dữ liệu
 
 Dữ liệu phim được cung cấp bởi OPhim. Repository này không tải xuống, sao chép

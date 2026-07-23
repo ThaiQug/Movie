@@ -2,18 +2,19 @@ import { z } from "zod";
 
 const optionalText = z.string().nullish();
 const optionalNumber = z.number().finite().nullish();
+const requiredText = z.string().trim().min(1);
 
 export const ophimTaxonomySchema = z.looseObject({
   _id: optionalText,
   id: optionalText,
-  name: z.string().min(1),
-  slug: z.string().min(1),
+  name: requiredText,
+  slug: requiredText,
 });
 
 export const ophimMovieSummarySchema = z.looseObject({
   _id: optionalText,
-  name: z.string().min(1),
-  slug: z.string().min(1),
+  name: requiredText,
+  slug: requiredText,
   origin_name: optionalText,
   thumb_url: optionalText,
   poster_url: optionalText,
@@ -28,10 +29,10 @@ export const ophimMovieSummarySchema = z.looseObject({
 });
 
 export const ophimPaginationSchema = z.looseObject({
-  totalItems: z.number().int().nonnegative().catch(0),
-  totalItemsPerPage: z.number().int().positive().catch(24),
-  currentPage: z.number().int().positive().catch(1),
-  pageRanges: z.number().int().nonnegative().catch(0),
+  totalItems: z.number().int().nonnegative().optional(),
+  totalItemsPerPage: z.number().int().positive().optional(),
+  currentPage: z.number().int().positive().optional(),
+  pageRanges: z.number().int().nonnegative().optional(),
 });
 
 const ophimListDataSchema = z.looseObject({
@@ -45,13 +46,13 @@ const ophimListDataSchema = z.looseObject({
 });
 
 export const ophimMovieListResponseSchema = z.looseObject({
-  status: z.string(),
+  status: z.literal("success"),
   message: z.string().optional(),
   data: ophimListDataSchema,
 });
 
 export const ophimTaxonomyResponseSchema = z.looseObject({
-  status: z.string(),
+  status: z.literal("success"),
   message: z.string().optional(),
   data: z.looseObject({
     items: z.array(ophimTaxonomySchema),
@@ -59,16 +60,16 @@ export const ophimTaxonomyResponseSchema = z.looseObject({
 });
 
 export const ophimEpisodeSchema = z.looseObject({
-  name: z.string().min(1),
-  slug: z.string().min(1),
+  name: requiredText,
+  slug: requiredText,
   filename: optionalText,
   link_embed: optionalText,
   link_m3u8: optionalText,
 });
 
 export const ophimServerSchema = z.looseObject({
-  server_name: z.string().min(1),
-  is_ai: z.boolean().optional().catch(false),
+  server_name: requiredText,
+  is_ai: z.boolean().optional().default(false),
   server_data: z.array(ophimEpisodeSchema),
 });
 
@@ -83,7 +84,7 @@ export const ophimMovieDetailSchema = ophimMovieSummarySchema.extend({
 });
 
 export const ophimMovieDetailResponseSchema = z.looseObject({
-  status: z.string(),
+  status: z.literal("success"),
   message: z.string().optional(),
   data: z.looseObject({
     item: ophimMovieDetailSchema,

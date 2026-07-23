@@ -1,0 +1,49 @@
+{
+  "status": "success",
+  "message": "",
+  "data": {
+    "seoOnPage": {
+      "titleHead": "Danh sách phim"
+    },
+    "items": [
+      {
+        "_id": "6a618f86b468d7d317f08284",
+        "name": "Cái Chết của Robin Hood",
+        "slug": "cai-chet-cua-robin-hood",
+        "origin_name": "The Death of Robin Hood",
+        "type": "single",
+        "thumb_url": "cai-chet-cua-robin-hood-thumb.jpg",
+        "poster_url": "/uploads/movies/cai-chet-cua-robin-hood-poster.jpg",
+        "time": "123 Phút",
+        "episode_current": "Full",
+        "quality": "HD",
+        "lang": "Vietsub",
+        "year": 2026,
+        "category": [
+          {
+            "id": "620a21b2e0fc277084dfd0c5",
+            "name": "Hành Động",
+            "slug": "hanh-dong"
+          }
+        ],
+        "country": [
+          {
+            "id": "620a231fe0fc277084dfd7ce",
+            "name": "Âu Mỹ",
+            "slug": "au-my"
+          }
+        ]
+      }
+    ],
+    "params": {
+      "pagination": {
+        "totalItems": 36024,
+        "totalItemsPerPage": 24,
+        "currentPage": 1,
+        "pageRanges": 5
+      }
+    },
+    "type_list": "phim-moi",
+    "APP_DOMAIN_CDN_IMAGE": "https://img.ophim.live"
+  }
+}

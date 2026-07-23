@@ -16,8 +16,11 @@ export class MovieNotFoundError extends OPhimApiError {
 }
 
 export class InvalidOPhimResponseError extends OPhimApiError {
-  constructor(message = "OPhim response does not match the expected format.") {
-    super(message);
+  constructor(
+    message = "OPhim response does not match the expected format.",
+    options?: { cause?: unknown },
+  ) {
+    super(message, options);
     this.name = "InvalidOPhimResponseError";
   }
 }

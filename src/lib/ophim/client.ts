@@ -66,7 +66,17 @@ export async function fetchOPhim<T>(
 
         lastError = error;
       } else {
-        const result: unknown = await response.json();
+        let result: unknown;
+
+        try {
+          result = await response.json();
+        } catch (error) {
+          throw new InvalidOPhimResponseError(
+            `OPhim returned invalid JSON for ${url.pathname}.`,
+            { cause: error },
+          );
+        }
+
         const parsed = schema.safeParse(result);
 
         if (!parsed.success) {

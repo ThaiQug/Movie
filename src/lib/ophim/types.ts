@@ -9,7 +9,9 @@ export interface MovieSummary {
   name: string;
   originalName?: string;
   slug: string;
+  /** OPhim poster_url: usually a landscape image suited to backdrops. */
   posterUrl: string;
+  /** OPhim thumb_url: usually portrait artwork suited to 2:3 cards. */
   thumbnailUrl: string;
   year?: number;
   quality?: string;

@@ -28,6 +28,16 @@ function positiveInteger(value: number | undefined): string | undefined {
   return String(value);
 }
 
+function requiredText(value: string, fieldName: string): string {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    throw new RangeError(`${fieldName} must not be empty.`);
+  }
+
+  return normalized;
+}
+
 export function buildMovieListQuery(query: MovieListQuery = {}): string {
   const params = new URLSearchParams();
   const page = positiveInteger(query.page);
@@ -47,7 +57,10 @@ export function buildMovieListQuery(query: MovieListQuery = {}): string {
 }
 
 export function buildMovieSearchQuery(query: MovieSearchQuery): string {
-  const keyword = query.keyword.trim().replace(/\s+/g, " ");
+  const keyword = requiredText(
+    query.keyword.trim().replace(/\s+/g, " "),
+    "Search keyword",
+  );
   const params = new URLSearchParams(
     buildMovieListQuery(query).replace(/^\?/, ""),
   );
@@ -87,8 +100,9 @@ export function getMoviesByCategory(
   slug: string,
   query: MovieListQuery = {},
 ): Promise<PaginatedMovies> {
+  const normalizedSlug = requiredText(slug, "Category slug");
   return fetchMovieList(
-    `/v1/api/the-loai/${encodeURIComponent(slug)}${buildMovieListQuery(query)}`,
+    `/v1/api/the-loai/${encodeURIComponent(normalizedSlug)}${buildMovieListQuery(query)}`,
   );
 }
 
@@ -96,8 +110,9 @@ export function getMoviesByCountry(
   slug: string,
   query: MovieListQuery = {},
 ): Promise<PaginatedMovies> {
+  const normalizedSlug = requiredText(slug, "Country slug");
   return fetchMovieList(
-    `/v1/api/quoc-gia/${encodeURIComponent(slug)}${buildMovieListQuery(query)}`,
+    `/v1/api/quoc-gia/${encodeURIComponent(normalizedSlug)}${buildMovieListQuery(query)}`,
   );
 }
 
@@ -117,7 +132,7 @@ export function getCountries(): Promise<MovieTaxonomy[]> {
 }
 
 export async function getMovieDetail(slug: string): Promise<MovieDetail> {
-  const normalizedSlug = slug.trim();
+  const normalizedSlug = requiredText(slug, "Movie slug");
   const response = await fetchOPhim(
     `/v1/api/phim/${encodeURIComponent(normalizedSlug)}`,
     ophimMovieDetailResponseSchema,

@@ -1,0 +1,28 @@
+{
+  "categories": {
+    "status": "success",
+    "message": "",
+    "data": {
+      "items": [
+        {
+          "_id": "620a21b2e0fc277084dfd0c5",
+          "name": "Hành Động",
+          "slug": "hanh-dong"
+        }
+      ]
+    }
+  },
+  "countries": {
+    "status": "success",
+    "message": "",
+    "data": {
+      "items": [
+        {
+          "_id": "62093063196e9f4ab6b448b8",
+          "name": "Trung Quốc",
+          "slug": "trung-quoc"
+        }
+      ]
+    }
+  }
+}
