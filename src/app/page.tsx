@@ -1,106 +1,137 @@
-import { getHomeMovies } from "@/lib/ophim";
-import type { MovieSummary } from "@/lib/ophim";
+import { Suspense } from "react";
+import { HeroBanner } from "@/components/movies/hero-banner";
+import { MovieSlider } from "@/components/movies/movie-slider";
+import { SectionState } from "@/components/ui/section-state";
+import {
+  getHomeMovies,
+  getMovieDetail,
+  getMovieList,
+  type MovieSummary,
+  type PaginatedMovies,
+} from "@/lib/ophim";
+import { sanitizeMovieContent } from "@/lib/sanitize";
 
 export const dynamic = "force-dynamic";
 
-async function loadPreview(): Promise<{
-  movies: MovieSummary[];
-  error?: string;
-}> {
-  try {
-    const result = await getHomeMovies({ limit: 6 });
-    return { movies: result.items.slice(0, 6) };
-  } catch {
-    return {
-      movies: [],
-      error:
-        "OPhim hiện chưa phản hồi. Nền tảng vẫn sẵn sàng và sẽ tự thử lại ở lần tải sau.",
-    };
-  }
+interface HomeSection {
+  title: string;
+  eyebrow: string;
+  href?: string;
+  result: PromiseSettledResult<PaginatedMovies>;
 }
 
-export default async function Home() {
-  const { movies, error } = await loadPreview();
+function Section({ title, eyebrow, href, result }: HomeSection) {
+  if (result.status === "rejected") {
+    return (
+      <section className="section-shell">
+        <SectionState
+          variant="error"
+          title={`Không tải được ${title.toLocaleLowerCase("vi")}`}
+          description="Nguồn dữ liệu đang tạm gián đoạn. Các khu vực khác vẫn hoạt động bình thường."
+        />
+      </section>
+    );
+  }
+
+  if (result.value.items.length === 0) {
+    return (
+      <section className="section-shell">
+        <SectionState
+          title={`Chưa có ${title.toLocaleLowerCase("vi")}`}
+          description="Hãy quay lại sau để xem các nội dung mới nhất."
+        />
+      </section>
+    );
+  }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#08090c] text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10 sm:px-10">
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <p className="text-xl font-bold tracking-[0.18em] text-red-500">
-            CINEMATIC
-          </p>
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
-            Phase 1–2
-          </span>
-        </header>
+    <MovieSlider
+      title={title}
+      eyebrow={eyebrow}
+      href={href}
+      movies={result.value.items.slice(0, 12)}
+    />
+  );
+}
 
-        <section className="flex flex-1 flex-col justify-center py-20">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-red-400">
-            Nền tảng đã sẵn sàng
-          </p>
-          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
-            Kiến trúc vững chắc cho trải nghiệm điện ảnh tiếp theo.
-          </h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
-            Next.js, PostgreSQL, Prisma và lớp dữ liệu OPhim đã được tách biệt,
-            xác thực và chuẩn hóa. Giao diện xem phim đầy đủ sẽ được xây dựng ở
-            phase kế tiếp.
-          </p>
+async function HomeHero({ movie }: { movie: MovieSummary }) {
+  let detail: Awaited<ReturnType<typeof getMovieDetail>> | null = null;
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-3">
-            {["TypeScript strict", "PostgreSQL + Prisma", "OPhim adapter"].map(
-              (item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 text-sm text-zinc-300"
-                >
-                  <span className="mr-2 text-emerald-400">●</span>
-                  {item}
-                </div>
-              ),
-            )}
-          </div>
+  try {
+    detail = await getMovieDetail(movie.slug);
+  } catch {
+    detail = null;
+  }
 
-          <div className="mt-12">
-            <div className="mb-4 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Kết nối dữ liệu thật
-                </p>
-                <h2 className="mt-2 text-xl font-medium">Phim mới từ OPhim</h2>
-              </div>
-              <span className="text-xs text-zinc-600">Không lưu trữ video</span>
-            </div>
+  return detail ? (
+      <HeroBanner
+        movie={detail}
+        backdropUrl={detail.posterUrl}
+        description={sanitizeMovieContent(detail.contentHtml)}
+      />
+  ) : (
+    <HeroBanner movie={movie} />
+  );
+}
 
-            {error ? (
-              <p className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200">
-                {error}
-              </p>
-            ) : (
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {movies.map((movie) => (
-                  <li
-                    key={movie.id}
-                    className="rounded-xl border border-white/10 bg-zinc-900/70 p-4"
-                  >
-                    <p className="truncate font-medium">{movie.name}</p>
-                    <p className="mt-1 text-sm text-zinc-500">
-                      {[movie.year, movie.quality, movie.language]
-                        .filter(Boolean)
-                        .join(" · ") || "Đang cập nhật"}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
+export default async function HomePage() {
+  const [latest, series, singles, animation] = await Promise.allSettled([
+    getHomeMovies({ limit: 16 }),
+    getMovieList("phim-bo", { limit: 12 }),
+    getMovieList("phim-le", { limit: 12 }),
+    getMovieList("hoat-hinh", { limit: 12 }),
+  ]);
 
-        <footer className="border-t border-white/10 pt-6 text-xs leading-5 text-zinc-600">
-          Dữ liệu đến từ nguồn bên thứ ba. Cinematic là project học tập và
-          portfolio, không sở hữu hoặc lưu trữ nội dung phim.
-        </footer>
+  const heroMovies: MovieSummary[] =
+    latest.status === "fulfilled" ? latest.value.items : [];
+
+  const sections: HomeSection[] = [
+    {
+      title: "Phim mới cập nhật",
+      eyebrow: "Vừa lên sóng",
+      result: latest,
+    },
+    {
+      title: "Phim bộ nổi bật",
+      eyebrow: "Câu chuyện dài tập",
+      href: "/phim-bo",
+      result: series,
+    },
+    {
+      title: "Phim lẻ tuyển chọn",
+      eyebrow: "Một tối trọn vẹn",
+      href: "/phim-le",
+      result: singles,
+    },
+    {
+      title: "Hoạt hình đặc sắc",
+      eyebrow: "Thế giới sắc màu",
+      href: "/hoat-hinh",
+      result: animation,
+    },
+  ];
+
+  return (
+    <>
+      {heroMovies[0] ? (
+        <Suspense fallback={<HeroBanner movie={heroMovies[0]} />}>
+          <HomeHero movie={heroMovies[0]} />
+        </Suspense>
+      ) : (
+        <div className="page-container pt-10">
+          <SectionState
+            variant="error"
+            title="Chưa thể tải phim nổi bật"
+            description="Bạn vẫn có thể khám phá các danh mục bên dưới."
+          />
+        </div>
+      )}
+
+      <div className="space-y-14 pb-20 pt-12 sm:space-y-16 sm:pt-14">
+        {sections.map((section) => (
+          <Section key={section.href ?? section.title} {...section} />
+        ))}
       </div>
-    </main>
+    </>
   );
 }

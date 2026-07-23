@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | Cinematic",
   },
   description:
-    "Nền tảng khám phá phim được xây dựng bằng Next.js và dữ liệu OPhim.",
+    "Khám phá phim mới, phim bộ, phim lẻ và hoạt hình trên Cinematic.",
 };
 
 export default function RootLayout({
@@ -17,7 +19,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className="h-full antialiased">
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <Header />
+        <main className="min-h-[70vh] flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
