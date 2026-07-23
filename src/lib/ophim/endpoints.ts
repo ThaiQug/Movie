@@ -1,23 +1,20 @@
-import { adaptMovieDetail, adaptMovieList, adaptTaxonomy } from "./adapters";
+import { adaptMovieDetail, adaptMovieList } from "./adapters";
 import { fetchOPhim } from "./client";
 import {
   ophimMovieDetailResponseSchema,
   ophimMovieListResponseSchema,
-  ophimTaxonomyResponseSchema,
 } from "./schemas";
 import type {
   MovieDetail,
   MovieListKind,
   MovieListQuery,
   MovieSearchQuery,
-  MovieTaxonomy,
   PaginatedMovies,
 } from "./types";
 
 const CACHE = {
   detail: 120,
   list: 300,
-  taxonomy: 3_600,
 } as const;
 
 function positiveInteger(value: number | undefined): string | undefined {
@@ -114,21 +111,6 @@ export function getMoviesByCountry(
   return fetchMovieList(
     `/v1/api/quoc-gia/${encodeURIComponent(normalizedSlug)}${buildMovieListQuery(query)}`,
   );
-}
-
-async function getTaxonomy(path: string): Promise<MovieTaxonomy[]> {
-  const response = await fetchOPhim(path, ophimTaxonomyResponseSchema, {
-    revalidate: CACHE.taxonomy,
-  });
-  return response.data.items.map(adaptTaxonomy);
-}
-
-export function getCategories(): Promise<MovieTaxonomy[]> {
-  return getTaxonomy("/v1/api/the-loai");
-}
-
-export function getCountries(): Promise<MovieTaxonomy[]> {
-  return getTaxonomy("/v1/api/quoc-gia");
 }
 
 export async function getMovieDetail(slug: string): Promise<MovieDetail> {
