@@ -19,6 +19,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.9.0",
+    "hls.js": "^1.6.16",
     "next": "16.2.11",
     "pg": "^8.22.0",
     "react": "19.2.4",
