@@ -10,7 +10,12 @@ import {
   type SearchParams,
 } from "@/lib/page-params";
 
-export const metadata: Metadata = { title: "Tìm kiếm phim" };
+export const metadata: Metadata = {
+  title: "Tìm kiếm phim",
+  alternates: {
+    canonical: "/tim-kiem",
+  },
+};
 
 export default async function SearchPage({
   searchParams,

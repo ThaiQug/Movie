@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { MovieListView } from "@/components/movies/movie-list-view";
 import { getMoviesByCategory } from "@/lib/ophim";
 import {
@@ -5,6 +6,20 @@ import {
   titleFromSlug,
   type SearchParams,
 } from "@/lib/page-params";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  return {
+    title: `Thể loại ${titleFromSlug(slug)}`,
+    alternates: {
+      canonical: `/the-loai/${encodeURIComponent(slug)}`,
+    },
+  };
+}
 
 export default async function CategoryPage({
   params,

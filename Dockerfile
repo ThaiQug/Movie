@@ -15,7 +15,6 @@ FROM dependencies AS builder
 WORKDIR /app
 ENV DATABASE_URL=postgresql://cinematic:cinematic@localhost:5432/cinematic
 COPY . .
-RUN npm run db:generate
 RUN npm run build
 
 FROM node:24-alpine AS runner

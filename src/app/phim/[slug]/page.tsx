@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { auth } from "@/auth";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { MovieSlider } from "@/components/movies/movie-slider";
@@ -17,13 +19,54 @@ import { buildPlayerHref } from "@/lib/player";
 import { sanitizeMovieContent } from "@/lib/sanitize";
 import { findFavorite } from "@/lib/favorites/repository";
 
-async function getMovie(slug: string): Promise<MovieDetail> {
+const getMovie = cache(async (slug: string): Promise<MovieDetail> => {
   try {
     return await getMovieDetail(slug);
   } catch (error) {
     if (error instanceof MovieNotFoundError) notFound();
     throw error;
   }
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const movie = await getMovie(slug);
+  const content = sanitizeMovieContent(movie.contentHtml);
+  const description =
+    content.slice(0, 155) ||
+    `Xem thông tin, danh sách tập và nội dung phim ${movie.name}.`;
+  const canonicalPath = `/phim/${encodeURIComponent(movie.slug)}`;
+
+  return {
+    title: movie.name,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      type: "video.movie",
+      locale: "vi_VN",
+      title: movie.name,
+      description,
+      url: canonicalPath,
+      images: [
+        {
+          url: movie.posterUrl || movie.thumbnailUrl,
+          alt: `Ảnh bìa phim ${movie.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: movie.name,
+      description,
+      images: [movie.posterUrl || movie.thumbnailUrl],
+    },
+  };
 }
 
 async function getRelated(movie: MovieDetail): Promise<PaginatedMovies | null> {

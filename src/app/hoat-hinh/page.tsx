@@ -3,7 +3,12 @@ import { MovieListView } from "@/components/movies/movie-list-view";
 import { getMovieList } from "@/lib/ophim";
 import { positivePage, type SearchParams } from "@/lib/page-params";
 
-export const metadata: Metadata = { title: "Hoạt hình" };
+export const metadata: Metadata = {
+  title: "Hoạt hình",
+  alternates: {
+    canonical: "/hoat-hinh",
+  },
+};
 
 export default async function AnimationPage({
   searchParams,

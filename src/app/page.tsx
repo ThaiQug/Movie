@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HeroBanner } from "@/components/movies/hero-banner";
 import { MovieSlider } from "@/components/movies/movie-slider";
@@ -12,6 +13,11 @@ import {
 import { sanitizeMovieContent } from "@/lib/sanitize";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 interface HomeSection {
   title: string;

@@ -1,30 +1,70 @@
 # Cinematic
 
-Cinematic là ứng dụng web khám phá phim được xây dựng với Next.js, TypeScript,
-PostgreSQL và OPhim API. Ứng dụng chuẩn hóa dữ liệu từ nguồn bên ngoài qua một
-lớp tích hợp độc lập, giúp giao diện không phụ thuộc trực tiếp vào cấu trúc
-response của API.
+Cinematic là website khám phá và xem phim được xây dựng như một dự án portfolio
+full-stack. Ứng dụng dùng Next.js, TypeScript, PostgreSQL và Auth.js; dữ liệu phim
+được chuẩn hóa từ OPhim qua một lớp tích hợp riêng để UI không phụ thuộc trực tiếp
+vào response của API bên thứ ba.
 
-## Tính năng hiện có
+> **Demo:** [https://movie-iota-rust.vercel.app](https://movie-iota-rust.vercel.app)
 
-- Hiển thị danh sách phim mới từ OPhim
-- Chuẩn hóa thông tin phim, thể loại, quốc gia và tập phim
-- Hỗ trợ truy vấn danh sách, tìm kiếm và bộ lọc
-- Xử lý URL ảnh tuyệt đối và tương đối
-- Timeout, retry và cache cho request đến OPhim
-- PostgreSQL schema cho người dùng, phim yêu thích và tiến độ xem
+## Tính năng
+
+- Giao diện dark theme responsive cho mobile, tablet và desktop.
+- Trang chủ, danh sách phim, phân trang, taxonomy và tìm kiếm debounce 400 ms.
+- Chi tiết phim, tập phim và gợi ý phim cùng thể loại.
+- Player hỗ trợ native HLS, `hls.js` và embed fallback.
+- Kiểm tra HTTPS và allowlist hostname trước khi phát video hoặc tải iframe.
+- Đăng ký, đăng nhập Credentials, JWT session và bảo vệ route tài khoản.
+- Thêm/xóa phim yêu thích với optimistic update và rollback khi API lỗi.
+- Metadata động, canonical URL, Open Graph, `robots.txt` và `noindex` cho route
+  riêng tư.
+- Timeout, retry, schema validation và cache theo từng request OPhim.
+
+## Kiến trúc
+
+```mermaid
+flowchart LR
+    Browser[Browser]
+    Next[Next.js App Router]
+    Auth[Auth.js]
+    API[Route Handlers]
+    Adapter[OPhim schemas + adapters]
+    DB[(PostgreSQL)]
+    OPhim[OPhim API]
+    Player[HLS / Embed hosts]
+
+    Browser --> Next
+    Next --> Auth
+    Next --> Adapter
+    Next --> Player
+    Browser --> API
+    API --> Auth
+    API --> DB
+    Auth --> DB
+    Adapter --> OPhim
+```
+
+- **UI:** Server Components tải dữ liệu; Client Components chỉ dùng cho search,
+  slider, navigation, authentication form, player và optimistic favorite.
+- **Integration:** Zod kiểm tra response OPhim, sau đó adapter chuyển đổi sang
+  domain model ổn định cho ứng dụng.
+- **Backend:** Route Handlers xác thực session ở server và thao tác qua Prisma.
+- **Database:** PostgreSQL lưu `User` và `Favorite`; ứng dụng không lưu lịch sử
+  hoặc tiến độ xem.
+- **Caching:** chỉ request dữ liệu công khai từ OPhim được revalidate. Session và
+  favorite dùng dữ liệu động; API favorite trả `Cache-Control: private, no-store`.
 
 ## Công nghệ
 
-- Next.js 16 và React 19
-- TypeScript
+- Next.js 16, React 19 và TypeScript
 - Tailwind CSS
-- PostgreSQL
-- Prisma ORM
+- Auth.js Credentials và bcrypt
+- PostgreSQL, Prisma ORM và `@prisma/adapter-pg`
+- hls.js
+- Vitest và React Testing Library
 - Docker Compose
 
-
-## Cài đặt
+## Chạy local
 
 ### Yêu cầu
 
@@ -32,35 +72,64 @@ response của API.
 - npm 11+
 - Docker Desktop
 
-### Chạy bằng Docker
+### Cách 1: chạy toàn bộ bằng Docker
 
 ```bash
 docker compose up --build
 ```
 
-PORT: [http://localhost:3000](http://localhost:3000).
+Mở [http://localhost:3000](http://localhost:3000). Compose tự khởi động
+PostgreSQL, generate Prisma Client và chạy migration.
 
-### Chạy trực tiếp
+### Cách 2: chạy ứng dụng trực tiếp
 
-Sao chép `.env.example` thành `.env`, sau đó:
+Sao chép `.env.example` thành `.env`, tạo `AUTH_SECRET`, sau đó chạy:
 
 ```bash
 docker compose up -d postgres
-npm install
+npm ci
 npm run db:generate
 npm run db:deploy
 npm run dev
 ```
 
-## Database
+Có thể tạo secret bằng:
 
-Tạo migration mới:
+```bash
+npx auth secret
+```
+
+## Biến môi trường
+
+| Biến | Bắt buộc | Mục đích |
+| --- | --- | --- |
+| `DATABASE_URL` | Có | PostgreSQL connection string |
+| `AUTH_SECRET` | Có | Ký và mã hóa session Auth.js |
+| `NEXT_PUBLIC_APP_URL` | Có | Origin chính thức cho canonical và Open Graph |
+| `OPHIM_BASE_URL` | Có | Base URL của OPhim API |
+| `OPHIM_IMAGE_BASE_URL` | Không | Override image base URL nếu nguồn API yêu cầu |
+| `PLAYER_VIDEO_HOSTS` | Có | Danh sách hostname HLS được phép, phân cách bằng dấu phẩy |
+| `PLAYER_EMBED_HOSTS` | Có | Danh sách hostname iframe được phép |
+
+Không commit `.env`, database URL hoặc secret production vào repository.
+
+## Database và migration
+
+Tạo migration trong môi trường development:
 
 ```bash
 npm run db:migrate -- --name ten_migration
 ```
 
-## Kiểm tra
+Áp dụng migration đã có trong production:
+
+```bash
+npm run db:deploy
+```
+
+Không dùng `prisma migrate dev` trên database production.
+
+## Testing và quality gates
 
 ```bash
 npm run typecheck
@@ -69,8 +138,45 @@ npm test
 npm run build
 ```
 
+Coverage report:
 
-## Nguồn dữ liệu
+```bash
+npm run test:coverage
+```
 
-Dữ liệu phim được cung cấp bởi OPhim. Repository này không tải xuống, sao chép
-hoặc lưu trữ video.
+Test hiện có bao phủ schema/adapter/client OPhim, sanitize nội dung, auth
+validation, password hashing, favorite repository/API, URL allowlist, lựa chọn
+nguồn player, SearchBar và optimistic favorite.
+
+## Deploy với Neon và Vercel
+
+1. Tạo Neon project và lấy pooled PostgreSQL connection string.
+2. Đặt connection string vào `DATABASE_URL` trong terminal cục bộ, rồi chạy
+   `npm run db:deploy` trước lần deploy production đầu tiên.
+3. Import repository vào Vercel.
+4. Thiết lập toàn bộ biến trong bảng trên cho môi trường Production. Đặt
+   `NEXT_PUBLIC_APP_URL` bằng domain production, ví dụ
+   `https://cinematic.example.com`.
+5. Deploy và kiểm tra `/robots.txt`, metadata trang phim, đăng ký/đăng nhập,
+   player và favorite trên domain production.
+6. Sau mỗi migration mới, chạy `npm run db:deploy` với production
+   `DATABASE_URL` trước khi phát hành version sử dụng schema mới.
+
+## Giới hạn
+
+- Không lưu lịch sử hoặc tiến độ xem và không đồng bộ đa thiết bị.
+- Không tự động chuyển tập và không có custom video control bar.
+- Không có recommendation engine, analytics hoặc dashboard.
+- Chỉ hỗ trợ đăng nhập email/mật khẩu; không có OAuth, magic link hay email
+  verification.
+- Không dùng Redis. Rate limiting nếu bổ sung ở bản portfolio chỉ phù hợp một
+  instance, không phải distributed rate limiting cho hệ thống nhiều region.
+- Chất lượng và tính sẵn sàng của metadata, poster và nguồn phát phụ thuộc nhà
+  cung cấp bên thứ ba.
+
+## Dữ liệu và bản quyền
+
+Dữ liệu phim được tổng hợp từ OPhim và các nguồn bên thứ ba. Cinematic là dự án
+học tập/portfolio, không sở hữu, sao chép hoặc lưu trữ nội dung video. Chủ sở hữu
+repository có trách nhiệm tuân thủ điều khoản của nhà cung cấp dữ liệu và quy định
+bản quyền tại nơi triển khai.
