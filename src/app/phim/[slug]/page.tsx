@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { MovieSlider } from "@/components/movies/movie-slider";
 import { SectionState } from "@/components/ui/section-state";
 import { ClockIcon } from "@/components/ui/icons";
@@ -13,6 +15,7 @@ import {
 } from "@/lib/ophim";
 import { buildPlayerHref } from "@/lib/player";
 import { sanitizeMovieContent } from "@/lib/sanitize";
+import { findFavorite } from "@/lib/favorites/repository";
 
 async function getMovie(slug: string): Promise<MovieDetail> {
   try {
@@ -73,8 +76,11 @@ export default async function MovieDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const movie = await getMovie(slug);
-  const related = await getRelated(movie);
+  const [movie, session] = await Promise.all([getMovie(slug), auth()]);
+  const [related, favorite] = await Promise.all([
+    getRelated(movie),
+    session?.user?.id ? findFavorite(session.user.id, movie.slug) : null,
+  ]);
   const content = sanitizeMovieContent(movie.contentHtml);
   const episodes = movie.servers.flatMap((server, serverIndex) =>
     server.episodes.map((episode) => ({
@@ -139,26 +145,37 @@ export default async function MovieDetailPage({
               {movie.currentEpisode ? <span>{movie.currentEpisode}</span> : null}
             </div>
 
-            {firstEpisode ? (
-              <Link
-                href={buildPlayerHref(
-                  movie.slug,
-                  firstEpisode.serverIndex,
-                  firstEpisode.slug,
-                )}
-                className="mt-7 inline-flex rounded-full bg-red-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
-              >
-                Xem phim
-              </Link>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="mt-7 cursor-not-allowed rounded-full bg-zinc-700 px-6 py-3 text-sm font-bold text-zinc-300 opacity-75"
-              >
-                Chưa có tập phim
-              </button>
-            )}
+            <div className="flex flex-wrap items-start gap-3">
+              {firstEpisode ? (
+                <Link
+                  href={buildPlayerHref(
+                    movie.slug,
+                    firstEpisode.serverIndex,
+                    firstEpisode.slug,
+                  )}
+                  className="mt-7 inline-flex min-h-11 items-center rounded-full bg-red-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+                >
+                  Xem phim
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="mt-7 min-h-11 cursor-not-allowed rounded-full bg-zinc-700 px-6 py-3 text-sm font-bold text-zinc-300 opacity-75"
+                >
+                  Chưa có tập phim
+                </button>
+              )}
+              <FavoriteButton
+                movie={{
+                  movieSlug: movie.slug,
+                  movieName: movie.name,
+                  moviePosterUrl: movie.thumbnailUrl,
+                }}
+                isAuthenticated={Boolean(session?.user)}
+                initialFavorite={Boolean(favorite)}
+              />
+            </div>
 
             <dl className="mt-8 space-y-3 border-t border-white/10 pt-6">
               <TaxonomyLinks
