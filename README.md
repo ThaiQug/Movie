@@ -1,7 +1,6 @@
 # Cinematic
 
-Cinematic là website khám phá và xem phim được xây dựng như một dự án portfolio
-full-stack. Ứng dụng dùng Next.js, TypeScript, PostgreSQL và Auth.js; dữ liệu phim
+Cinematic là dự án cá nhân website khám phá và xem phim. Ứng dụng dùng Next.js, TypeScript, PostgreSQL và Auth.js; dữ liệu phim
 được chuẩn hóa từ OPhim qua một lớp tích hợp riêng để UI không phụ thuộc trực tiếp
 vào response của API bên thứ ba.
 
@@ -22,39 +21,6 @@ vào response của API bên thứ ba.
   Vitals và hiệu năng production.
 - Timeout, retry, schema validation và cache theo từng request OPhim.
 
-## Kiến trúc
-
-```mermaid
-flowchart LR
-    Browser[Browser]
-    Next[Next.js App Router]
-    Auth[Auth.js]
-    API[Route Handlers]
-    Adapter[OPhim schemas + adapters]
-    DB[(PostgreSQL)]
-    OPhim[OPhim API]
-    Player[HLS / Embed hosts]
-
-    Browser --> Next
-    Next --> Auth
-    Next --> Adapter
-    Next --> Player
-    Browser --> API
-    API --> Auth
-    API --> DB
-    Auth --> DB
-    Adapter --> OPhim
-```
-
-- **UI:** Server Components tải dữ liệu; Client Components chỉ dùng cho search,
-  slider, navigation, authentication form, player và optimistic favorite.
-- **Integration:** Zod kiểm tra response OPhim, sau đó adapter chuyển đổi sang
-  domain model ổn định cho ứng dụng.
-- **Backend:** Route Handlers xác thực session ở server và thao tác qua Prisma.
-- **Database:** PostgreSQL lưu `User` và `Favorite`; ứng dụng không lưu lịch sử
-  hoặc tiến độ xem.
-- **Caching:** chỉ request dữ liệu công khai từ OPhim được revalidate. Session và
-  favorite dùng dữ liệu động; API favorite trả `Cache-Control: private, no-store`.
 
 ## Công nghệ
 
@@ -101,20 +67,6 @@ Có thể tạo secret bằng:
 ```bash
 npx auth secret
 ```
-
-## Biến môi trường
-
-| Biến | Bắt buộc | Mục đích |
-| --- | --- | --- |
-| `DATABASE_URL` | Có | PostgreSQL connection string |
-| `AUTH_SECRET` | Có | Ký và mã hóa session Auth.js |
-| `NEXT_PUBLIC_APP_URL` | Có | Origin chính thức cho canonical và Open Graph |
-| `OPHIM_BASE_URL` | Có | Base URL của OPhim API |
-| `OPHIM_IMAGE_BASE_URL` | Không | Override image base URL nếu nguồn API yêu cầu |
-| `PLAYER_VIDEO_HOSTS` | Có | Danh sách hostname HLS được phép, phân cách bằng dấu phẩy |
-| `PLAYER_EMBED_HOSTS` | Có | Danh sách hostname iframe được phép |
-
-Không commit `.env`, database URL hoặc secret production vào repository.
 
 ## Database và migration
 
