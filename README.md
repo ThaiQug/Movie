@@ -18,6 +18,8 @@ vào response của API bên thứ ba.
 - Thêm/xóa phim yêu thích với optimistic update và rollback khi API lỗi.
 - Metadata động, canonical URL, Open Graph, `robots.txt` và `noindex` cho route
   riêng tư.
+- Vercel Web Analytics và Speed Insights để theo dõi lượt truy cập, Core Web
+  Vitals và hiệu năng production.
 - Timeout, retry, schema validation và cache theo từng request OPhim.
 
 ## Kiến trúc
@@ -63,6 +65,7 @@ flowchart LR
 - hls.js
 - Vitest và React Testing Library
 - Docker Compose
+- Vercel Web Analytics và Speed Insights
 
 ## Chạy local
 
@@ -157,16 +160,18 @@ nguồn player, SearchBar và optimistic favorite.
 4. Thiết lập toàn bộ biến trong bảng trên cho môi trường Production. Đặt
    `NEXT_PUBLIC_APP_URL` bằng domain production, ví dụ
    `https://cinematic.example.com`.
-5. Deploy và kiểm tra `/robots.txt`, metadata trang phim, đăng ký/đăng nhập,
+5. Bật Web Analytics và Speed Insights trong Vercel Dashboard.
+6. Deploy và kiểm tra `/robots.txt`, metadata trang phim, đăng ký/đăng nhập,
    player và favorite trên domain production.
-6. Sau mỗi migration mới, chạy `npm run db:deploy` với production
+7. Sau mỗi migration mới, chạy `npm run db:deploy` với production
    `DATABASE_URL` trước khi phát hành version sử dụng schema mới.
 
 ## Giới hạn
 
 - Không lưu lịch sử hoặc tiến độ xem và không đồng bộ đa thiết bị.
 - Không tự động chuyển tập và không có custom video control bar.
-- Không có recommendation engine, analytics hoặc dashboard.
+- Không có recommendation engine, analytics nghiệp vụ hoặc dashboard quản trị;
+  chỉ dùng telemetry tổng hợp của Vercel cho lượt truy cập và hiệu năng.
 - Chỉ hỗ trợ đăng nhập email/mật khẩu; không có OAuth, magic link hay email
   verification.
 - Không dùng Redis. Rate limiting nếu bổ sung ở bản portfolio chỉ phù hợp một
