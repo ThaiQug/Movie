@@ -69,3 +69,19 @@ export function ClockIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function HeartIcon({
+  filled = false,
+  ...props
+}: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      {...baseProps}
+      fill={filled ? "currentColor" : "none"}
+      {...props}
+    >
+      <path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6l1.2 1.2L12 21l7.6-7.6 1.2-1.2a5.4 5.4 0 0 0 0-7.6Z" />
+    </svg>
+  );
+}
