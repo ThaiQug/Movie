@@ -11,6 +11,7 @@ import {
   type MovieDetail,
   type PaginatedMovies,
 } from "@/lib/ophim";
+import { buildPlayerHref } from "@/lib/player";
 import { sanitizeMovieContent } from "@/lib/sanitize";
 
 async function getMovie(slug: string): Promise<MovieDetail> {
@@ -75,12 +76,14 @@ export default async function MovieDetailPage({
   const movie = await getMovie(slug);
   const related = await getRelated(movie);
   const content = sanitizeMovieContent(movie.contentHtml);
-  const episodes = movie.servers.flatMap((server) =>
+  const episodes = movie.servers.flatMap((server, serverIndex) =>
     server.episodes.map((episode) => ({
       ...episode,
+      serverIndex,
       serverName: server.name,
     })),
   );
+  const firstEpisode = episodes[0];
 
   return (
     <>
@@ -136,14 +139,26 @@ export default async function MovieDetailPage({
               {movie.currentEpisode ? <span>{movie.currentEpisode}</span> : null}
             </div>
 
-            <button
-              type="button"
-              disabled
-              title="Trình phát sẽ được bổ sung ở Phase 4"
-              className="mt-7 cursor-not-allowed rounded-full bg-zinc-700 px-6 py-3 text-sm font-bold text-zinc-300 opacity-75"
-            >
-              Xem phim · Sắp ra mắt
-            </button>
+            {firstEpisode ? (
+              <Link
+                href={buildPlayerHref(
+                  movie.slug,
+                  firstEpisode.serverIndex,
+                  firstEpisode.slug,
+                )}
+                className="mt-7 inline-flex rounded-full bg-red-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+              >
+                Xem phim
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="mt-7 cursor-not-allowed rounded-full bg-zinc-700 px-6 py-3 text-sm font-bold text-zinc-300 opacity-75"
+              >
+                Chưa có tập phim
+              </button>
+            )}
 
             <dl className="mt-8 space-y-3 border-t border-white/10 pt-6">
               <TaxonomyLinks
@@ -186,8 +201,13 @@ export default async function MovieDetailPage({
           {episodes.length > 0 ? (
             <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
               {episodes.map((episode, index) => (
-                <div
+                <Link
                   key={`${episode.serverName}-${episode.slug}-${index}`}
+                  href={buildPlayerHref(
+                    movie.slug,
+                    episode.serverIndex,
+                    episode.slug,
+                  )}
                   className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/[0.025] px-4 py-3"
                 >
                   <span className="truncate text-sm font-medium">
@@ -196,7 +216,7 @@ export default async function MovieDetailPage({
                   <span className="shrink-0 text-[11px] text-zinc-600">
                     {episode.serverName}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
