@@ -14,13 +14,7 @@ vào response của API bên thứ ba.
 - Player hỗ trợ native HLS, `hls.js` và embed fallback.
 - Kiểm tra HTTPS và allowlist hostname trước khi phát video hoặc tải iframe.
 - Đăng ký, đăng nhập Credentials, JWT session và bảo vệ route tài khoản.
-- Thêm/xóa phim yêu thích với optimistic update và rollback khi API lỗi.
-- Metadata động, canonical URL, Open Graph, `robots.txt` và `noindex` cho route
-  riêng tư.
-- Vercel Web Analytics và Speed Insights để theo dõi lượt truy cập, Core Web
-  Vitals và hiệu năng production.
-- Timeout, retry, schema validation và cache theo từng request OPhim.
-
+- Thêm/xóa phim yêu thích với optimistic update và rollback khi API lỗi..
 
 ## Công nghệ
 
@@ -102,34 +96,6 @@ npm run test:coverage
 Test hiện có bao phủ schema/adapter/client OPhim, sanitize nội dung, auth
 validation, password hashing, favorite repository/API, URL allowlist, lựa chọn
 nguồn player, SearchBar và optimistic favorite.
-
-## Deploy với Neon và Vercel
-
-1. Tạo Neon project và lấy pooled PostgreSQL connection string.
-2. Đặt connection string vào `DATABASE_URL` trong terminal cục bộ, rồi chạy
-   `npm run db:deploy` trước lần deploy production đầu tiên.
-3. Import repository vào Vercel.
-4. Thiết lập toàn bộ biến trong bảng trên cho môi trường Production. Đặt
-   `NEXT_PUBLIC_APP_URL` bằng domain production, ví dụ
-   `https://cinematic.example.com`.
-5. Bật Web Analytics và Speed Insights trong Vercel Dashboard.
-6. Deploy và kiểm tra `/robots.txt`, metadata trang phim, đăng ký/đăng nhập,
-   player và favorite trên domain production.
-7. Sau mỗi migration mới, chạy `npm run db:deploy` với production
-   `DATABASE_URL` trước khi phát hành version sử dụng schema mới.
-
-## Giới hạn
-
-- Không lưu lịch sử hoặc tiến độ xem và không đồng bộ đa thiết bị.
-- Không tự động chuyển tập và không có custom video control bar.
-- Không có recommendation engine, analytics nghiệp vụ hoặc dashboard quản trị;
-  chỉ dùng telemetry tổng hợp của Vercel cho lượt truy cập và hiệu năng.
-- Chỉ hỗ trợ đăng nhập email/mật khẩu; không có OAuth, magic link hay email
-  verification.
-- Không dùng Redis. Rate limiting nếu bổ sung ở bản portfolio chỉ phù hợp một
-  instance, không phải distributed rate limiting cho hệ thống nhiều region.
-- Chất lượng và tính sẵn sàng của metadata, poster và nguồn phát phụ thuộc nhà
-  cung cấp bên thứ ba.
 
 ## Dữ liệu và bản quyền
 
