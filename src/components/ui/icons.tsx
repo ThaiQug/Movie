@@ -52,6 +52,14 @@ export function ChevronRightIcon(props: IconProps) {
   );
 }
 
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...baseProps} {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
 export function FilmIcon(props: IconProps) {
   return (
     <svg aria-hidden="true" {...baseProps} {...props}>

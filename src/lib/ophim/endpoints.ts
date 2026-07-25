@@ -1,20 +1,23 @@
-import { adaptMovieDetail, adaptMovieList } from "./adapters";
+import { adaptMovieDetail, adaptMovieList, adaptTaxonomy } from "./adapters";
 import { fetchOPhim } from "./client";
 import {
   ophimMovieDetailResponseSchema,
   ophimMovieListResponseSchema,
+  ophimTaxonomyResponseSchema,
 } from "./schemas";
 import type {
   MovieDetail,
   MovieListKind,
   MovieListQuery,
   MovieSearchQuery,
+  MovieTaxonomy,
   PaginatedMovies,
 } from "./types";
 
 const CACHE = {
   detail: 120,
   list: 300,
+  taxonomy: 86_400,
 } as const;
 
 function positiveInteger(value: number | undefined): string | undefined {
@@ -72,6 +75,21 @@ async function fetchMovieList(path: string): Promise<PaginatedMovies> {
     { revalidate: CACHE.list },
   );
   return adaptMovieList(response);
+}
+
+async function fetchTaxonomy(path: string): Promise<MovieTaxonomy[]> {
+  const response = await fetchOPhim(path, ophimTaxonomyResponseSchema, {
+    revalidate: CACHE.taxonomy,
+  });
+  return response.data.items.map(adaptTaxonomy);
+}
+
+export function getMovieCategories(): Promise<MovieTaxonomy[]> {
+  return fetchTaxonomy("/v1/api/the-loai");
+}
+
+export function getMovieCountries(): Promise<MovieTaxonomy[]> {
+  return fetchTaxonomy("/v1/api/quoc-gia");
 }
 
 export function getHomeMovies(
